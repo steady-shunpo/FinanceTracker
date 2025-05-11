@@ -1,12 +1,10 @@
+import 'dotenv/config'
 import pkg from 'whatsapp-web.js';
 const { Client, LocalAuth } = pkg;
 import TelegramBot from 'node-telegram-bot-api';
 import axios from 'axios';
-import qrcode from "qrcode-terminal";
 import fs from "fs";
-import { exec } from "child_process";
 import { vl } from "moondream";
-import { get } from 'http';
 import mongodb from './config/mongoose-connection.js'
 import express from 'express';
 import queries from './dbQuery/query.js'
@@ -28,7 +26,7 @@ app.use(express.json());
 app.use('/db', queries)
 
 async function textToJson(plainText) {
-    const apptoken = 'AstraCS:ZFmQqGIDmBCOqdIAQdxLJHUI:f59e408025f672c33d9d6cb2179757bf704ec673fe95631e8a65dffe9d453844'
+    const apptoken = process.env.APPLICATION_TOKEN
     const payload = {
         "input_value": plainText,
         "output_type": "chat",
@@ -116,8 +114,9 @@ function test() {
 
 // test();
 
-const token = `8084830242:AAEDX-p9zQSLu0odiCqXDGBukw-thEeNEzY`
-const moondrem = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlfaWQiOiIwODFmMjNhNy0wOWI5LTQ1ZmMtYWQzNC1iODI4YmIxOGViNjEiLCJvcmdfaWQiOiJnWkNoOVVHakQ2dzVoQzRoVEljU3BhUlRpRjdSMDdERCIsImlhdCI6MTc0NjYwMTE5NCwidmVyIjoxfQ.QLJes9LQmdMyF91YyQC_Zdhi2_zNZ5MZt5JwjrRUC-c`
+const token = process.env.TELE_TOKEN
+const moondrem = process.env.MOONDREAM_KEY
+console.log(process.env)
 const bot = new TelegramBot(token, { polling: true });
 const model = new vl({ apiKey: `${moondrem}` });
 

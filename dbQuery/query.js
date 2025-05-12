@@ -113,7 +113,7 @@ router.post('/transaction-total', async (req, res) => {
         mp.set(remark, (mp.get(remark) || 0) + transacObj.transaction)
     }
     const mapObject = Object.fromEntries(mp);
-    res.send(mapObject)
+    res.status(200).send(mapObject)
 })
 
 

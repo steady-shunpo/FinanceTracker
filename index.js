@@ -11,6 +11,7 @@ import queries from './dbQuery/query.js'
 
 const app = express();
 const port = 3000;
+const chatID = process.env.CHATID
 
 
 const Mongo = mongodb
@@ -69,14 +70,13 @@ async function monthStart(year, month) {
         body: JSON.stringify(payload)
     }
     const reply = await fetch('http://localhost:3000/db/transaction-total', sendData)
-    const replied = reply.json()
-    console.log(replied)
+    const replied = await reply.json()
     return replied
 }
 
 async function checkMonth() {
     const date = new Date();
-    if (date.getDate() === 1) return true;
+    if (date.getDate() === 15) return true;
     return false;
 }
 
@@ -92,11 +92,15 @@ async function insertInDB(JSONobject) {
     };
     const response = await fetch('http://localhost:3000/db/transaction-add'
         , options)
-    const data = await response.json()
-
-    return data.message
-
-
+    if(response.ok){
+        const returnData = "Transaction of " + JSONobject.transaction + " for " + JSONobject.remark + " was added.";
+        return returnData
+    }
+    else{
+        const data = "transaction not added. please try again in some time";
+        return data;
+    }
+    
 }
 
 function test() {
@@ -116,7 +120,6 @@ function test() {
 
 const token = process.env.TELE_TOKEN
 const moondrem = process.env.MOONDREAM_KEY
-console.log(process.env)
 const bot = new TelegramBot(token, { polling: true });
 const model = new vl({ apiKey: `${moondrem}` });
 
@@ -132,19 +135,21 @@ setInterval(async () => {
         }
         else month = date.getMonth();
         const year = date.getFullYear();
-        const data = await monthStart(year, month);
-        bot.on("message", async(msg) =>{
-            const chatID = msg.chat.id
-            for (const key of Object.keys(data)){
-                const toSend = key + ": " + data.key
-                await bot.sendMessage(chatID, toSend)
+        const data = await monthStart(year, month+1);
+        // const data = await monthStart(year, month);
+            
+            const keys = Object.keys(data);
+            for (const key of keys){
+                console.log(key)
+                const toSend = key + ": " + data[key];
+                console.log("to Send", toSend);
+                await bot.sendMessage(chatID, toSend);
             }
-        })
+        
         
     }
-}, 3600000)
+}, 72000000)
 bot.on("message", async (msg) => {
-    const chatID = msg.chat.id
 
     if (msg.photo) {
         const pic = msg.photo[msg.photo.length - 1]
@@ -162,22 +167,25 @@ bot.on("message", async (msg) => {
         });
         const op = await textToJson(queryResponse.answer)
         const sliced = op.slice(7, -4);
-        const obj = JSON.parse(sliced)
-        obj['messageID'] = msg.message_id
-        console.log(obj)
-        const mess = insertInDB(obj)
-        bot.sendMessage(chatID, mess)
+        const obj = JSON.parse(sliced);
+        obj['messageID'] = msg.message_id;
+        console.log(obj.remark.toLowerCase());
+        console.log(obj);
+        const mess = await insertInDB(obj);
+        console.log(mess);
+        bot.sendMessage(chatID, mess);
         // console.log(JSON.stringify(JSONobject))
     }
 
     if (msg.text) {
         const op = await textToJson(msg.text)
         const sliced = op.slice(7, -4);
-        const obj = JSON.parse(sliced)
-        obj['messageID'] = msg.message_id
-        console.log(obj)
-        const mess = insertInDB(obj)
-        // bot.sendMessage(chatID, mess)
+        const obj = JSON.parse(sliced);
+        obj['messageID'] = msg.message_id;
+        obj.remark = obj.remark.toLowerCase();
+        console.log(obj);
+        const mess = await insertInDB(obj);
+        bot.sendMessage(chatID, mess);
     }
 })
 

@@ -102,18 +102,60 @@ router.post('/transaction-update', async (req, res) => {
 // });
 
 
+router.get('/transaction-recent', async (req, res) =>{
+    console.log("hi")
+    async function getRecentTransactions() {
+  try {
+    const recentTransactions = await transactionModel.find({})
+      .sort({ createdAt: -1 }) // Sort in descending order based on the 'createdAt' field
+      .limit(5); // Limit the result to 5 documents
+
+    res.send(recentTransactions)
+  } catch (error) {
+    console.error('Error fetching recent transactions:', error);
+    throw error; // Or handle the error as needed
+  }
+}
+getRecentTransactions();
+
+
+})
+
+
 router.post('/transaction-total', async (req, res) => {
     const { month, year } = req.body;
     const transacs = await transactionModel.find({transactYear:year, transactMonth: month})
     const mp = new Map();
 
-    for (let index = 0; index < transacs.length; index++) {
-        const transacObj = transacs[index];
-        const remark = transacObj.remark;
-        mp.set(remark, (mp.get(remark) || 0) + transacObj.transaction)
-    }
-    const mapObject = Object.fromEntries(mp);
-    res.status(200).send(mapObject)
+     const groupedTransactions = transacs.reduce((acc, curr) => {
+          const remark = curr.remark.toLowerCase(); // normalize remarks to lowercase
+          if (!acc[remark]) {
+            acc[remark] = {
+              remark: curr.remark,
+              transaction: 0,
+              count: 0
+            };
+          }
+          acc[remark].transaction += curr.transaction;
+          acc[remark].count += 1;
+          return acc;
+        }, {});
+
+        // Convert grouped object back to array and sort by amount
+        const summarizedTransactions = Object.values(groupedTransactions)
+          .map(item => ({
+            id: item.remark, // using remark as id since we grouped by it
+            transaction: item.transaction,
+            remark: `${item.remark}`,
+            transactMonth: month,
+            transactYear: year,
+            transactDay: "-"
+          }))
+          .sort((a, b) => b.transaction - a.transaction);
+
+
+    console.log("summ", summarizedTransactions)
+    res.status(200).send(summarizedTransactions)
 })
 
 

@@ -8,11 +8,20 @@ import { vl } from "moondream";
 import mongodb from './config/mongoose-connection.js'
 import express from 'express';
 import queries from './dbQuery/query.js'
+import cors from "cors";
+
 
 const app = express();
 const port = 3000;
 const chatID = process.env.CHATID
 
+
+app.use(cors({
+    origin: ["http://localhost:5173",],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Accept', 'Authorization']
+}));
 
 const Mongo = mongodb
 Mongo.then(() => {
@@ -76,7 +85,7 @@ async function monthStart(year, month) {
 
 async function checkMonth() {
     const date = new Date();
-    if (date.getDate() === 15) return true;
+    if (date.getDate() === 1) return true;
     return false;
 }
 
@@ -92,15 +101,15 @@ async function insertInDB(JSONobject) {
     };
     const response = await fetch('http://localhost:3000/db/transaction-add'
         , options)
-    if(response.ok){
+    if (response.ok) {
         const returnData = "Transaction of " + JSONobject.transaction + " for " + JSONobject.remark + " was added.";
         return returnData
     }
-    else{
+    else {
         const data = "transaction not added. please try again in some time";
         return data;
     }
-    
+
 }
 
 function test() {
@@ -135,21 +144,28 @@ setInterval(async () => {
         }
         else month = date.getMonth();
         const year = date.getFullYear();
-        const data = await monthStart(year, month+1);
+        const data = await monthStart(year, month);
         // const data = await monthStart(year, month);
-            
-            const keys = Object.keys(data);
-            for (const key of keys){
-                console.log(key)
-                const toSend = key + ": " + data[key];
-                console.log("to Send", toSend);
-                await bot.sendMessage(chatID, toSend);
-            }
-        
-        
+
+        // const keys = Object.keys(data);
+        // for (const key of keys) {
+        //     console.log(key)
+        //     const toSend = key + ": " + data[key];
+        //     console.log("to Send", toSend);
+        //     await bot.sendMessage(chatID, toSend);
+        // }
+        data.forEach(async item => {
+            await bot.sendMessage(chatID, '--- Item ---');
+            await bot.sendMessage(chatID, `Remark: ${item.remark}`);
+            await bot.sendMessage(chatID, `Transaction: ${item.transaction}`);
+
+        });
+
     }
 }, 72000000)
 bot.on("message", async (msg) => {
+    const tempID = msg.chat.id;
+    console.log(tempID)
 
     if (msg.photo) {
         const pic = msg.photo[msg.photo.length - 1]
@@ -173,7 +189,7 @@ bot.on("message", async (msg) => {
         console.log(obj);
         const mess = await insertInDB(obj);
         console.log(mess);
-        bot.sendMessage(chatID, mess);
+        bot.sendMessage(tempID, mess);
         // console.log(JSON.stringify(JSONobject))
     }
 
@@ -185,7 +201,7 @@ bot.on("message", async (msg) => {
         obj.remark = obj.remark.toLowerCase();
         console.log(obj);
         const mess = await insertInDB(obj);
-        bot.sendMessage(chatID, mess);
+        bot.sendMessage(tempID, mess);
     }
 })
 

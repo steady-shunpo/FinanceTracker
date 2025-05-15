@@ -18,8 +18,8 @@ const userSchema = mongoose.Schema({
     },
     transactYear: {
         type: Number,
-    },
-});
+    }, 
+}, {timestamps: true});
 
 
   

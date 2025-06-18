@@ -25,34 +25,34 @@ router.post('/transaction-add', async (req, res) => {
 })
 
 
-router.post('/transaction-update', async (req, res) => {
-    const { messageID, transaction, remark, transactMonth, transactYear, transactDay } = req.body;
+router.post('/amount-update', async (req, res) => {
+    const { messageID, transaction } = req.body;
     try {
         const updatedTransaction = await transactionModel.findOneAndUpdate(
             { messageID },
-            { transaction, remark },
+            { transaction },
+            { new: true }
+        );
+        res.status(200).json({ message: 'amount updated successfully' });
+    } catch (error) {
+        res.status(500).json({ error: 'Error updating amount' });
+    }
+
+})
+
+router.post('/remark-update', async (req, res) => {
+    const { messageID, remark } = req.body;
+    try {
+        const updatedTransaction = await transactionModel.findOneAndUpdate(
+            { messageID },
+            { remark },
             { new: true }
         );
 
-        if (!updatedTransaction) {
-            const newTransaction = new transactionModel({
-                messageID,
-                transaction,
-                remark,
-                transactDay,
-                transactMonth,
-                transactYear,
-            });
-            try {
-                await newTransaction.save();
-                res.status(201).json({ message: 'Transaction added successfully' });
-            } catch (error) {
-                res.status(500).json({ error: 'Error adding transaction' });
-            }
-        }
-        res.status(200).json({ message: 'Transaction updated successfully', updatedTransaction });
+        
+        res.status(200).json({ message: 'remark updated successfully' });
     } catch (error) {
-        res.status(500).json({ error: 'Error updating transaction' });
+        res.status(500).json({ error: 'Error updating remark' });
     }
 
 })

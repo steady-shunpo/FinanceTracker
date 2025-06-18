@@ -151,7 +151,7 @@ async function updateDB_amount(obj, msg){
         },
         body: JSON.stringify(obj)
     };
-    const response = await fetch('http://localhost:3000/db/amount-update'
+    const response = await fetch('https://financetracker-backend-m5wa.onrender.com/db/amount-update'
         , options)
     if (response.ok) {
         const returnData = "Amount updated to " + obj.transaction;
@@ -178,7 +178,7 @@ async function updateDB_remark(obj, msg){
         },
         body: JSON.stringify(obj)
     };
-    const response = await fetch('http://localhost:3000/db/remark-update'
+    const response = await fetch('https://financetracker-backend-m5wa.onrender.com/db/remark-update'
         , options)
     if (response.ok) {
         const returnData = "Remark updated to " + obj.remark;
@@ -204,7 +204,7 @@ async function monthStart(year, month) {
         },
         body: JSON.stringify(payload)
     }
-    const reply = await fetch('http://localhost:3000/db/transaction-total', sendData)
+    const reply = await fetch('https://financetracker-backend-m5wa.onrender.com/db/transaction-total', sendData)
     const replied = await reply.json()
     return replied
 }
@@ -225,7 +225,7 @@ async function insertInDB(JSONobject) {
         },
         body: JSON.stringify(JSONobject)
     };
-    const response = await fetch('http://localhost:3000/db/transaction-add'
+    const response = await fetch('https://financetracker-backend-m5wa.onrender.com/db/transaction-add'
         , options)
     if (response.ok) {
         const returnData = "Transaction of " + JSONobject.transaction + " for " + JSONobject.remark + " was added.";

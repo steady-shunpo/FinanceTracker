@@ -71,11 +71,11 @@ app.use('/db', queries)
 
 const VENV_DIR = path.join(__dirname, 'pythonScripts/venv'); // Name of your virtual environment directory
 let pythonExecutable;
-// if (process.platform === 'win32') {
+if (process.platform === 'win32') {
     pythonExecutable = path.join(VENV_DIR, 'Scripts', 'python.exe');
-// } else {
-//     pythonExecutable = path.join(VENV_DIR, 'bin', 'python');
-// }
+} else {
+    pythonExecutable = path.join(VENV_DIR, 'bin', 'python');
+}
 
 const pythonScriptPath = path.join(__dirname, "pythonScripts/main.py");
 
